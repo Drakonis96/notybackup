@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backup Notion 🔄</title>
+  <!-- Asegúrate de que la ruta al CSS sea correcta -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+      <h1>Backup Notion 🔄</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Mensajes flash -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+            <div class="flash-message">💬 {{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Sección para iniciar backup -->
+    <section class="backup-form">
+      <h2>Configurar Backup 🗄</h2>
+      <form method="POST" action="{{ url_for('index') }}">
+        <div class="form-group">
+          <label for="database_id">ID de Base de Datos 📚:</label>
+          <input type="text" id="database_id" name="database_id" placeholder="Ingresa el ID de la base de datos" required>
+        </div>
+        <div class="form-group">
+          <label for="file_name">Nombre del Archivo 📄:</label>
+          <input type="text" id="file_name" name="file_name" placeholder="Nombre del archivo CSV" required>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="schedule_backup" name="schedule_backup">
+          <label for="schedule_backup">Programar Backup 🕒</label>
+        </div>
+
+        <!-- Opciones de programación (inicialmente ocultas) -->
+        <div id="schedule-options" class="hidden">
+          <div class="form-group">
+            <label for="schedule_type">Tipo de Programación ⚙️:</label>
+            <select name="schedule_type" id="schedule_type">
+              <option value="intervalo">Intervalo</option>
+              <option value="cron">Cron</option>
+            </select>
+          </div>
+          <!-- Opciones para intervalo -->
+          <div id="interval-options">
+            <div class="form-group">
+              <label for="interval_value">Valor del Intervalo ⏱:</label>
+              <input type="number" id="interval_value" name="interval_value" placeholder="Ej: 5" min="1">
+            </div>
+            <div class="form-group">
+              <label for="interval_unit">Unidad ⏳:</label>
+              <select name="interval_unit" id="interval_unit">
+                <option value="seconds">Segundos</option>
+                <option value="minutes">Minutos</option>
+                <option value="hours">Horas</option>
+                <option value="days">Días</option>
+              </select>
+            </div>
+          </div>
+          <!-- Opciones para cron -->
+          <div id="cron-options" class="hidden">
+            <div class="form-group">
+              <label for="cron_weekday">Día de la Semana (0-6) 📆:</label>
+              <input type="number" id="cron_weekday" name="cron_weekday" placeholder="Ej: 1" min="0" max="6">
+            </div>
+            <div class="form-group">
+              <label for="cron_hour">Hora (0-23) ⏰:</label>
+              <input type="number" id="cron_hour" name="cron_hour" placeholder="Ej: 14" min="0" max="23">
+            </div>
+            <div class="form-group">
+              <label for="cron_minute">Minuto (0-59) ⏲:</label>
+              <input type="number" id="cron_minute" name="cron_minute" placeholder="Ej: 30" min="0" max="59">
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn">Iniciar Backup 🚀</button>
+      </form>
+    </section>
+
+    <!-- Sección de Historial de Backups -->
+    <section class="history-section">
+      <h2>Historial de Backups 📜</h2>
+      {% if history %}
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha y Hora</th>
+              <th>Archivo</th>
+              <th>Formato</th>
+              <th>Registros</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for record in history %}
+              <tr>
+                <td>{{ record.timestamp|format_datetime }}</td>
+                <td>{{ record.file_name }}</td>
+                <td>{{ record.format }}</td>
+                <td>{{ record.num_records }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No hay backups realizados aún.</p>
+      {% endif %}
+      <form method="POST" action="{{ url_for('clear_history') }}">
+        <button type="submit" class="btn danger">Limpiar Historial 🗑</button>
+      </form>
+    </section>
+
+    <!-- Sección de Backups Programados -->
+    <section class="scheduled-section">
+      <h2>Backups Programados ⏳</h2>
+      {% if scheduled_jobs %}
+        <ul class="job-list">
+          {% for job in scheduled_jobs %}
+            <li>
+              <span>{{ job.id }}</span>
+              <form method="POST" action="{{ url_for('delete_scheduled_backup', job_id=job.id) }}" onsubmit="return confirm('¿Eliminar el backup programado?');">
+                <button type="submit" class="btn danger">Eliminar ❌</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No hay backups programados.</p>
+      {% endif %}
+    </section>
+
+    <!-- Sección de Bases de Datos Guardadas -->
+    <section class="database-section">
+      <h2>Bases de Datos Guardadas 📚</h2>
+      {% if db_ids %}
+        <ul class="db-list">
+          {% for db in db_ids %}
+            <li>
+              <span>{{ db }}</span>
+              <form method="POST" action="{{ url_for('delete_database_id', db_id=db) }}" onsubmit="return confirm('¿Eliminar esta base de datos?');">
+                <button type="submit" class="btn danger">Eliminar ❌</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No hay bases de datos guardadas.</p>
+      {% endif %}
+      <form method="POST" action="{{ url_for('add_database_id') }}" class="add-db-form">
+        <div class="form-group">
+          <label for="db_id">Añadir Base de Datos 📌:</label>
+          <input type="text" id="db_id" name="db_id" placeholder="ID de la base de datos">
+        </div>
+        <button type="submit" class="btn">Agregar ➕</button>
+      </form>
+    </section>
+
+    <!-- Sección para eliminar backups almacenados -->
+    <section class="delete-backups-section">
+      <h2>Borrar Backups ⚠️</h2>
+      <form method="POST" action="{{ url_for('delete_backups') }}" onsubmit="return confirm('¿Eliminar todos los backups?');">
+        <button type="submit" class="btn danger">Borrar Todos los Backups 🗑</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Script para mostrar/ocultar opciones de programación -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const scheduleCheckbox = document.getElementById('schedule_backup');
+      const scheduleOptions = document.getElementById('schedule-options');
+      const scheduleType = document.getElementById('schedule_type');
+      const intervalOptions = document.getElementById('interval-options');
+      const cronOptions = document.getElementById('cron-options');
+
+      function toggleScheduleOptions() {
+        if (scheduleCheckbox.checked) {
+          scheduleOptions.classList.remove('hidden');
+          toggleScheduleTypeOptions();
+        } else {
+          scheduleOptions.classList.add('hidden');
+        }
+      }
+
+      function toggleScheduleTypeOptions() {
+        if (scheduleType.value === 'intervalo') {
+          intervalOptions.classList.remove('hidden');
+          cronOptions.classList.add('hidden');
+        } else if (scheduleType.value === 'cron') {
+          cronOptions.classList.remove('hidden');
+          intervalOptions.classList.add('hidden');
+        }
+      }
+
+      scheduleCheckbox.addEventListener('change', toggleScheduleOptions);
+      scheduleType.addEventListener('change', toggleScheduleTypeOptions);
+
+      // Inicializar visibilidad al cargar la página
+      toggleScheduleOptions();
+    });
+  </script>
+</body>
+</html>

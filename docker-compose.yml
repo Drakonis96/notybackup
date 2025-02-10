@@ -1,0 +1,16 @@
+version: '3'
+services:
+  notion_backup:
+    image: drakonis96/notybackup:latest  # Reemplaza con tu imagen y etiqueta
+    ports:
+      - "5005:5005"
+    environment:
+      - NOTION_API_KEY=tu_clave_secreta_de_notion  # ¡REEMPLAZA!
+      - FLASK_SECRET_KEY=una_clave_secreta_aleatoria_y_larga  # ¡REEMPLAZA!
+      - PUID=1000  # Reemplaza con tu UID
+      - PGID=1000  # Reemplaza con tu GID
+      - TZ=Europe/Madrid
+    volumes:
+      - /data/mynotionbackup/data:/app/data
+      - /data/mynotionbackup/backup_folders:/app/backup_folders
+    restart: unless-stopped

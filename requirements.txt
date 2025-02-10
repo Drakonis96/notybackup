@@ -1,0 +1,6 @@
+Flask
+Flask-APScheduler
+python-dotenv
+requests
+gunicorn
+notion_client
