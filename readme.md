@@ -1,4 +1,7 @@
-# Notion CSV Backup
+# Notybackup - Automated Notion CSV Backup
+
+<img src="https://github.com/user-attachments/assets/6ad79f5c-c541-4a64-a81b-4dfdca52a221" alt="logo" width="100">
+
 
 **Notion CSV Backup** es una aplicación web desarrollada en **Flask** que permite realizar copias de seguridad de datos de una base de datos de **Notion**. 
 La aplicación consulta la **API de Notion**, transforma la información en registros y los exporta en formato **CSV**. Además, mantiene un historial de backups en un 
