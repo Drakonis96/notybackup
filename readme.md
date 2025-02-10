@@ -1,18 +1,32 @@
-# Notion CSV Backup
+#Notion CSV Backup
 
-Notion CSV Backup es una aplicación web desarrollada en Flask que permite realizar copias de seguridad de datos de una base de datos de Notion. La aplicación consulta la API de Notion, transforma la información en registros y los exporta en formato CSV. Además, mantiene un historial de backups en un archivo JSON y permite programar copias de seguridad de forma automática mediante APScheduler.
+Notion CSV Backup is a web application developed in Flask that allows users to back up data from a Notion database. The application queries the Notion API, transforms the information into records, and exports them in CSV format. Additionally, it maintains a backup history in a JSON file and enables automatic backup scheduling using APScheduler.
 
----
+##Features
+✅ Query Notion API: Extracts data from a Notion database using a configured API key.
+✅ CSV Export: Transforms the retrieved data into records and saves them as CSV files inside backup_folders/.
+✅ Backup History: Logs the date, file name, format, and record count in data/backups_history.json.
+✅ Task Scheduling: Enables automatic backup scheduling at regular intervals using APScheduler.
+✅ Web Interface: Provides forms to start manual or scheduled backups and view the backup history.
 
-## Características
+##Project Structure
 
-- **Consulta a la API de Notion:** Extrae datos de una base de datos usando la clave API configurada.
-- **Exportación a CSV:** Transforma los datos obtenidos en registros y los guarda en archivos CSV dentro de `backup_folders/`.
-- **Historial de backups:** Registra la fecha, nombre del archivo, formato y cantidad de registros en `data/backups_history.json`.
-- **Programación de tareas:** Permite programar backups automáticos a intervalos regulares mediante APScheduler.
-- **Interfaz Web:** Ofrece formularios para iniciar backups manuales o programados y para visualizar el historial.
-
----
-
-## Estructura del Proyecto
-
+notybackup/
+│── css/                 # Stylesheets
+│── data/                # Backup history storage
+│   ├── backups_history.json
+│── img/                 # Image assets
+│── static/              # Static files (CSS, images)
+│   ├── css/
+│   ├── img/
+│── templates/           # HTML templates
+│── Dockerfile           # Docker configuration
+│── LICENSE              # License file
+│── app.py               # Main Flask application
+│── docker-compose.yml   # Docker Compose configuration
+│── dockerignore.txt     # Docker ignore rules
+│── index.html           # Web interface homepage
+│── readme.md            # Documentation
+│── requirements.txt     # Dependencies
+│── result.html          # Result page template
+│── style.css            # Additional styles
