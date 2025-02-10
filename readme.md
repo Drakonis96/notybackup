@@ -2,98 +2,122 @@
 
 <img src="https://github.com/user-attachments/assets/6ad79f5c-c541-4a64-a81b-4dfdca52a221" alt="logo" width="100">
 
+**Notion CSV Backup** is a web application developed in **Flask** that allows backing up data from a **Notion** database.  
+The application queries the **Notion API**, transforms the information into records, and exports them in **CSV** format.  
+Additionally, it maintains a backup history in a **JSON** file and enables scheduling automatic backups using **APScheduler**.
 
-**Notion CSV Backup** es una aplicación web desarrollada en **Flask** que permite realizar copias de seguridad de datos de una base de datos de **Notion**. 
-La aplicación consulta la **API de Notion**, transforma la información en registros y los exporta en formato **CSV**. Además, mantiene un historial de backups en un 
-archivo **JSON** y permite programar copias de seguridad de forma automática mediante **APScheduler**.
+## 🚀 Features
 
-## 🚀 Características
-
-- ✅ **Consulta a la API de Notion**: Extrae datos de una base de datos usando la clave API configurada.
-- ✅ **Exportación a CSV**: Transforma los datos obtenidos en registros y los guarda en archivos CSV dentro de `backup_folders/`.
-- ✅ **Historial de backups**: Registra la fecha, nombre del archivo, formato y cantidad de registros en `data/backups_history.json`.
-- ✅ **Programación de tareas**: Permite programar backups automáticos a intervalos regulares mediante **APScheduler**.
-- ✅ **Interfaz Web**: Ofrece formularios para iniciar backups manuales o programados y para visualizar el historial.
+- ✅ **Notion API Query**: Extracts data from a database using the configured API key.
+- ✅ **CSV Export**: Converts retrieved data into records and saves them as CSV files in `backup_folders/`.
+- ✅ **Backup History**: Logs the date, file name, format, and record count in `data/backups_history.json`.
+- ✅ **Task Scheduling**: Enables automatic backup scheduling at regular intervals via **APScheduler**.
+- ✅ **Web Interface**: Provides forms to initiate manual or scheduled backups and view the history.
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 notybackup/
-│── css/                 # Estilos CSS
-│── data/                # Almacenamiento del historial de backups
+│── css/                 # CSS styles
+│── data/                # Backup history storage
 │   ├── backups_history.json
-│── img/                 # Imágenes
-│── static/              # Archivos estáticos (CSS, imágenes)
+│── img/                 # Images
+│── static/              # Static files (CSS, images)
 │   ├── css/
 │   ├── img/
-│── templates/           # Plantillas HTML
-│── Dockerfile           # Configuración de Docker
-│── LICENSE              # Archivo de licencia
-│── app.py               # Aplicación principal en Flask
-│── docker-compose.yml   # Configuración de Docker Compose
-│── dockerignore.txt     # Reglas para ignorar archivos en Docker
-│── index.html           # Página principal de la interfaz web
-│── readme.md            # Documentación del proyecto
-│── requirements.txt     # Dependencias necesarias
-│── result.html          # Página de resultados
-│── style.css            # Estilos adicionales
+│── templates/           # HTML templates
+│── Dockerfile           # Docker configuration
+│── LICENSE              # License file
+│── app.py               # Main Flask application
+│── docker-compose.yml   # Docker Compose configuration
+│── dockerignore.txt     # Docker ignore rules
+│── index.html           # Main web interface page
+│── readme.md            # Project documentation
+│── requirements.txt     # Required dependencies
+│── result.html          # Results page
+│── style.css            # Additional styles
 ```
 
 ---
 
-## ⚙️ Instalación y Configuración
+## ⚙️ Installation & Setup
 
-### 🔹 Requisitos
+### 🔹 Requirements
 
 - Python 3.8+
 - Notion API Token
-- Docker (opcional, para despliegue con contenedores)
+- Docker (optional, for containerized deployment)
 
-### 🔹 Instalación Manual
+### 🔹 Manual Installation
 
-1. Clona el repositorio:
+1. Clone the repository:
    ```sh
    git clone https://github.com/drakonis96/notybackup.git
    cd notybackup
    ```
-2. Instala las dependencias:
+2. Install dependencies:
    ```sh
    pip install -r requirements.txt
    ```
-3. Configura la clave API de Notion en un archivo `.env`:
+3. Set up the Notion API key in a `.env` file:
    ```env
-   NOTION_API_KEY=tu_clave_aqui
-   DATABASE_ID=tu_database_id
+   NOTION_API_KEY=your_api_key_here
+   DATABASE_ID=your_database_id
    ```
-4. Ejecuta la aplicación:
+4. Run the application:
    ```sh
    python app.py
    ```
 
-### 🔹 Usando Docker
+---
 
-1. Construye la imagen Docker:
-   ```sh
-   docker build -t notybackup .
+### 🔹 Recommended Installation with Docker Compose
+
+For a streamlined deployment, use **Docker Compose**:
+
+1. Create a `docker-compose.yml` file and add the following configuration:
+
+   ```yaml
+   version: "3.8"
+
+   services:
+     notion_backup:
+       image: drakonis96/notybackup:latest  # Replace with your image and tag
+       ports:
+         - "5005:5005"
+       environment:
+         - NOTION_API_KEY=your_notion_secret_key  # REPLACE!
+         - FLASK_SECRET_KEY=a_random_long_secret_key  # REPLACE!
+         - PUID=1000  # Replace with your UID
+         - PGID=1000  # Replace with your GID
+         - TZ=Europe/Madrid
+       volumes:
+         - /data/mynotionbackup/data:/app/data
+         - /data/mynotionbackup/backup_folders:/app/backup_folders
+       restart: unless-stopped
    ```
-2. Inicia el contenedor:
+
+2. Run the following command to start the service:
+
    ```sh
-   docker run -d -p 5000:5000 --env-file .env notybackup
+   docker-compose up -d
    ```
+
+This will pull the latest version of **Notybackup**, start it as a background service, and automatically restart it if it crashes.
 
 ---
 
-## 🛠 Uso
+## 🛠 Usage
 
-1. Accede a la interfaz web en `http://localhost:5000`
-2. Usa los formularios para iniciar un backup manual o programar uno automático.
-3. Descarga los archivos CSV desde la sección de historial de backups.
+1. Access the web interface at `http://localhost:5005`
+2. Use the forms to initiate a manual backup or schedule an automatic one.
+3. Download CSV files from the backup history section.
 
 ---
 
-## 📝 Licencia
+## 📝 License
 
 Este proyecto está licenciado bajo la **GPLv3**. Consulta el archivo `LICENSE` para más detalles.
 
