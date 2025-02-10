@@ -50,41 +50,15 @@ notybackup/
 - Notion API Token
 - Docker (optional, for containerized deployment)
 
-### 🔹 Manual Installation
-
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/drakonis96/notybackup.git
-   cd notybackup
-   ```
-2. Install dependencies:
-   ```sh
-   pip install -r requirements.txt
-   ```
-3. Set up the Notion API key in a `.env` file:
-   ```env
-   NOTION_API_KEY=your_api_key_here
-   DATABASE_ID=your_database_id
-   ```
-4. Run the application:
-   ```sh
-   python app.py
-   ```
-
----
-
 ### 🔹 Recommended Installation with Docker Compose
-
-For a streamlined deployment, use **Docker Compose**:
 
 1. Create a `docker-compose.yml` file and add the following configuration:
 
    ```yaml
    version: "3.8"
-
    services:
      notion_backup:
-       image: drakonis96/notybackup:latest  # Replace with your image and tag
+       image: drakonis96/notybackup:latest
        ports:
          - "5005:5005"
        environment:
@@ -92,10 +66,10 @@ For a streamlined deployment, use **Docker Compose**:
          - FLASK_SECRET_KEY=a_random_long_secret_key  # REPLACE!
          - PUID=1000  # Replace with your UID
          - PGID=1000  # Replace with your GID
-         - TZ=Europe/Madrid
+         - TZ=Europe/Madrid   # Replace with your TZ
        volumes:
-         - /data/mynotionbackup/data:/app/data
-         - /data/mynotionbackup/backup_folders:/app/backup_folders
+         - /data/mynotionbackup/data:/app/data # Replace path
+         - /data/mynotionbackup/backup_folders:/app/backup_folders   # Replace path
        restart: unless-stopped
    ```
 
