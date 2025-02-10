@@ -2,7 +2,7 @@
 
 <img src="https://github.com/user-attachments/assets/6ad79f5c-c541-4a64-a81b-4dfdca52a221" alt="logo" width="100">
 
-**Notion CSV Backup** is a web application developed in **Flask** that allows backing up data from a **Notion** database.  
+**Notion CSV Backup** is a web application developed in **Python** that allows backing up data from a **Notion** database.  
 The application queries the **Notion API**, transforms the information into records, and exports them in **CSV** format.  
 Additionally, it maintains a backup history in a **JSON** file and enables scheduling automatic backups using **APScheduler**.
 
