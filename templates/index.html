@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notion Backup 🔄</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* Example CSS for small icon buttons */
+    .btn-icon {
+      padding: 4px 6px;
+      font-size: 1em;
+      line-height: 1;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    .btn-icon.danger {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+      <h1>Notion Backup 🔄</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+            <div class="flash-message">💬 {{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Backup Configuration Section -->
+    <section class="backup-form">
+      <h2>Configure Backup 🗄</h2>
+      <form method="POST" action="{{ url_for('index') }}">
+        <div class="form-group">
+          <label for="database_id">Database ID 📚:</label>
+          <input type="text" id="database_id" name="database_id" placeholder="Enter database ID" required>
+        </div>
+        <div class="form-group">
+          <label for="file_name">File Name 📄:</label>
+          <input type="text" id="file_name" name="file_name" placeholder="CSV file name" required>
+        </div>
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="schedule_backup" name="schedule_backup">
+          <label for="schedule_backup">Schedule Backup 🕒</label>
+        </div>
+
+        <!-- Scheduling Options (initially hidden) -->
+        <div id="schedule-options" class="hidden">
+          <div class="form-group">
+            <label for="schedule_type">Schedule Type ⚙️:</label>
+            <select name="schedule_type" id="schedule_type">
+              <option value="interval">Interval</option>
+              <option value="cron">Cron</option>
+            </select>
+          </div>
+          <!-- Interval Options -->
+          <div id="interval-options">
+            <div class="form-group">
+              <label for="interval_value">Interval Value ⏱:</label>
+              <input type="number" id="interval_value" name="interval_value" placeholder="e.g., 5" min="1">
+            </div>
+            <div class="form-group">
+              <label for="interval_unit">Unit ⏳:</label>
+              <select name="interval_unit" id="interval_unit">
+                <option value="seconds">Seconds</option>
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+              </select>
+            </div>
+          </div>
+          <!-- Cron Options -->
+          <div id="cron-options" class="hidden">
+            <div class="form-group">
+              <label for="cron_weekday">Weekday (0-6) 📆:</label>
+              <input type="number" id="cron_weekday" name="cron_weekday" placeholder="e.g., 1" min="0" max="6">
+            </div>
+            <div class="form-group">
+              <label for="cron_hour">Hour (0-23) ⏰:</label>
+              <input type="number" id="cron_hour" name="cron_hour" placeholder="e.g., 14" min="0" max="23">
+            </div>
+            <div class="form-group">
+              <label for="cron_minute">Minute (0-59) ⏲:</label>
+              <input type="number" id="cron_minute" name="cron_minute" placeholder="e.g., 30" min="0" max="59">
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn">Start Backup 🚀</button>
+      </form>
+    </section>
+
+    <!-- Backup History Section -->
+    <section class="history-section">
+      <h2>Backup History 📜</h2>
+      {% if history %}
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>File</th>
+                <th>Format</th>
+                <th>Records</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in history %}
+                <tr>
+                  <td>{{ record.timestamp|format_datetime }}</td>
+                  <td>{{ record.file_name }}</td>
+                  <td>{{ record.format }}</td>
+                  <td>{{ record.num_records }}</td>
+                  <td>
+                    <div style="display: flex; gap: 4px;">
+                      <form method="GET" action="{{ url_for('download_backup', file_name=record.file_name) }}" style="margin: 0;">
+                        <button type="submit" class="btn-icon" title="Download">📥</button>
+                      </form>
+                      <form method="POST" action="{{ url_for('delete_backup', file_name=record.file_name) }}" onsubmit="return confirm('Delete this backup?');" style="margin: 0;">
+                        <button type="submit" class="btn-icon danger" title="Delete">❌</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p>No backups created yet.</p>
+      {% endif %}
+      <form method="POST" action="{{ url_for('clear_history') }}">
+        <button type="submit" class="btn danger">Clear All History 🗑</button>
+      </form>
+    </section>
+
+    <!-- Clean History by Age Section -->
+    <section class="clean-history-section">
+      <h2>Clean History by Age ⏳</h2>
+      <form method="POST" action="{{ url_for('clean_history_period') }}">
+        <div class="form-group">
+          <label for="period_value">Remove records older than:</label>
+          <input type="number" id="period_value" name="period_value" placeholder="Numeric value" required min="1">
+        </div>
+        <div class="form-group">
+          <label for="period_type">Period:</label>
+          <select name="period_type" id="period_type">
+            <option value="days">Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+          </select>
+        </div>
+        <button type="submit" class="btn">Clean History</button>
+      </form>
+    </section>
+
+    <!-- Scheduled Backups Section -->
+    <section class="scheduled-section">
+      <h2>Scheduled Backups ⏳</h2>
+      {% if scheduled_jobs %}
+        <ul class="job-list">
+          {% for job in scheduled_jobs %}
+            <li>
+              <span>{{ job.id }}</span>
+              <form method="POST" action="{{ url_for('delete_scheduled_backup', job_id=job.id) }}" onsubmit="return confirm('Delete scheduled backup?');">
+                <button type="submit" class="btn danger">❌</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No scheduled backups.</p>
+      {% endif %}
+    </section>
+
+    <!-- Saved Databases Section -->
+    <section class="database-section">
+      <h2>Saved Databases 📚</h2>
+      {% if db_ids %}
+        <ul class="db-list">
+          {% for db in db_ids %}
+            <li>
+              <span>{{ db }}</span>
+              <form method="POST" action="{{ url_for('delete_database_id', db_id=db) }}" onsubmit="return confirm('Delete this database?');">
+                <button type="submit" class="btn danger">❌</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No saved databases.</p>
+      {% endif %}
+      <form method="POST" action="{{ url_for('add_database_id') }}" class="add-db-form">
+        <div class="form-group">
+          <label for="db_id">Add Database 📌:</label>
+          <input type="text" id="db_id" name="db_id" placeholder="Database ID">
+        </div>
+        <button type="submit" class="btn">Add ➕</button>
+      </form>
+    </section>
+
+    <!-- Delete All Backups Section -->
+    <section class="delete-backups-section">
+      <h2>Delete Backups ⚠️</h2>
+      <form method="POST" action="{{ url_for('delete_backups') }}" onsubmit="return confirm('Delete all backups?');">
+        <button type="submit" class="btn danger">Delete All Backups 🗑</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Script to show/hide scheduling options -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const scheduleCheckbox = document.getElementById('schedule_backup');
+      const scheduleOptions = document.getElementById('schedule-options');
+      const scheduleType = document.getElementById('schedule_type');
+      const intervalOptions = document.getElementById('interval-options');
+      const cronOptions = document.getElementById('cron-options');
+
+      function toggleScheduleOptions() {
+        if (scheduleCheckbox.checked) {
+          scheduleOptions.classList.remove('hidden');
+          toggleScheduleTypeOptions();
+        } else {
+          scheduleOptions.classList.add('hidden');
+        }
+      }
+
+      function toggleScheduleTypeOptions() {
+        if (scheduleType.value === 'interval') {
+          intervalOptions.classList.remove('hidden');
+          cronOptions.classList.add('hidden');
+        } else if (scheduleType.value === 'cron') {
+          cronOptions.classList.remove('hidden');
+          intervalOptions.classList.add('hidden');
+        }
+      }
+
+      scheduleCheckbox.addEventListener('change', toggleScheduleOptions);
+      scheduleType.addEventListener('change', toggleScheduleTypeOptions);
+
+      // Initialize visibility
+      toggleScheduleOptions();
+    });
+  </script>
+</body>
+</html>
