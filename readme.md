@@ -1,4 +1,6 @@
-# ![NotyBackup Logo](./static/img/logo.png)
+<p align="center">
+  <img src="./img/logo.png" alt="NotyBackup Logo" width="150"/>
+</p>
 
 # 🚀 NotyBackup – Simple & Automated Notion Backups
 
